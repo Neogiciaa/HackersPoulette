@@ -1,6 +1,6 @@
 <?php
 
-include('database-config.php');
+include('../database-config.php');
 global $connexion;
 
 function mailIsValid($mail) {
@@ -19,28 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-try {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name = $_POST['name'];
-        $firstname = $_POST['firstname'];
-        $email = $_POST['email'];
-        $description = $_POST['description'];
-        $file = $_POST['file'];
-
-        $query = $connexion->prepare("INSERT INTO Ticket (name, firstname, email, file, description) VALUES(:name, :firstname, :email, :file, :description)");
-        $query->execute([
-            'name' => $name,
-            'firstname' => $firstname,
-            'email' => $email,
-            'file' => $file,
-            'description' => $description
-        ]);
-        echo 'Votre demande à bien été enregistrée.';
-    }
-} catch (PDOException $error) {
-    echo $error->getMessage();
-}
-
 ?>
 
 <!doctype html>
@@ -50,7 +28,7 @@ try {
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="form.css">
+    <link rel="stylesheet" href="../styles/form.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <title>Hackers poulette</title>
 </head>
@@ -88,6 +66,31 @@ try {
         </div>
 
         <input type="submit" value="Envoyer">
+        <?php
+        try {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $name = $_POST['name'];
+                $firstname = $_POST['firstname'];
+                $email = $_POST['email'];
+                $description = $_POST['description'];
+                $file = $_POST['file'];
+
+                $query = $connexion->prepare("INSERT INTO Ticket (name, firstname, email, file, description) VALUES(:name, :firstname, :email, :file, :description)");
+                $query->execute([
+                    'name' => $name,
+                    'firstname' => $firstname,
+                    'email' => $email,
+                    'file' => $file,
+                    'description' => $description
+                ]);
+
+                header("Location: http://localhost/hackers-poulette/pages/success.php");
+                exit();
+            }
+        } catch (PDOException $error) {
+            echo $error->getMessage();
+        }
+        ?>
     </form>
 </body>
 </html>
