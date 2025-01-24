@@ -3,6 +3,24 @@
 include('database-config.php');
 global $connexion;
 
+function mailIsValid($mail) {
+    $validMail = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+    return preg_match($validMail, $mail) === 1;
+}
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $emailError = '';
+
+    if (isset($_POST['email'])) {
+        $email = $_POST['email'];
+
+        if (!mailIsValid($email)) {
+            $emailError = "Veuillez entrer un format d'adresse email valide.";
+        }
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -23,28 +41,30 @@ global $connexion;
     <form method="POST" action="">
         <div>
             <label for="name">Nom :</label>
-            <input id="name" type="text" placeholder="John" required>
+            <input id="name" name="name" type="text" placeholder="John" required>
         </div>
 
         <div>
             <label for="firstname">Prénom :</label>
-            <input id="firstname" type="text" placeholder="Doe" required>
+            <input id="firstname" name="firstname" type="text" placeholder="Doe" required>
         </div>
-
 
         <div>
             <label for="email">Email :</label>
-            <input id="email" type="text" placeholder="johndoe@gmail.com" required>
+            <input id="email" name="email" type="text" placeholder="johndoe@gmail.com" required>
+            <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($emailError)): ?>
+                <p><?= htmlspecialchars($emailError) ?></p>
+            <?php endif; ?>
         </div>
 
         <div class="description">
             <label for="description">Description :</label>
-            <textarea id="description" placeholder="Décrivez votre problème..." required></textarea>
+            <textarea id="description" name="description" placeholder="Décrivez votre problème..." required></textarea>
         </div>
 
         <div class ="import">
             <label for="file">Importez votre fichier :</label>
-            <input id="file" type="file" required>
+            <input id="file" name="file" type="file">
         </div>
 
         <input type="submit" value="Envoyer">
