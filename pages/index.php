@@ -1,5 +1,6 @@
 <?php
 
+include('../ReCaptcha/ReCaptcha.php');
 include('../database-config.php');
 global $connexion;
 
@@ -28,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <link rel="stylesheet" href="../styles/form.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <title>Hackers poulette</title>
@@ -35,6 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <h1>Hackers Poulette SAV</h1>
     <h2>Pour toute difficultée rencontrée, merci de nous contacter via le formulaire suivant !</h2>
+    <?php
+    require_once 'autoload.php';
+    if (isset ($_POST['submit'])) {
+        $recaptcha = new \HackersPoulette\ReCaptcha\ReCaptcha('6Lc0SsIqAAAAAAqL8D5hHNpj3gDA9-RFA0uFDJcU');
+
+        $gRecaptchaResponse = $_POST['g-recaptcha-response'];
+
+        $remoteIp = $_SERVER['REMOTE_ADDR'];
+        $resp = $recaptcha->setExpectedHostname('localhost')
+
+            ->verify($gRecaptchaResponse, $remoteIp);
+        if ($resp->isSuccess()) {
+            echo 'Success';
+        } else {
+            $errors = $resp->getErrorCodes();
+            var_dump($errors);
+        }
+    }
+
+    ?>
 
     <form method="POST" action="">
         <div>
@@ -65,7 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input id="file" name="file" type="file">
         </div>
 
-        <input type="submit" value="Envoyer">
+        <div class="g-recaptcha" data-sitekey="6Lc0SsIqAAAAAIIcxx5jmB6lREe3tXhLIOVE2Get"></div>
+        <br/>
+
+        <input type="submit" name="submit" value="Envoyer">
         <?php
         try {
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -84,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'description' => $description
                 ]);
 
-                header("Location: http://localhost/hackers-poulette/pages/success.php");
+                header("Location: http://localhost:8888/Hackers-Poulette/HackersPoulette/pages/success.php");
                 exit();
             }
         } catch (PDOException $error) {
