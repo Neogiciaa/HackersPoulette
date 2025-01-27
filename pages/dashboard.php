@@ -68,11 +68,9 @@ if (isset($_POST['search'])) {
                             <tr>
                                 <td><?= htmlspecialchars($ticket['id']) ?></td>
                                 <td>
-                                    <details>
-                                        <summary><?= htmlspecialchars($ticket['description']) ?></summary>
-                                        <p>Status: <?= htmlspecialchars($ticket['status']) ?></p>
-                                    </details>
-                                </td>
+                                    <a href="update.php">
+                                    <?= htmlspecialchars($ticket['description']) ?></td>
+                                    </a>
                                 <td><?= htmlspecialchars($ticket['status']) ?></td>
                             </tr>
                         <?php endforeach; ?>
