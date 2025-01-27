@@ -32,50 +32,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace HackersPoulette\ReCaptcha\RequestMethod;
+namespace ReCaptcha\RequestMethod;
+
+use ReCaptcha\ReCaptcha;
+use ReCaptcha\RequestMethod;
+use ReCaptcha\RequestParameters;
 
 /**
- * Convenience wrapper around the cURL functions to allow mocking.
+ * Sends POST requests to the reCAPTCHA service.
  */
-class Curl
+class Post implements RequestMethod
 {
     /**
-     * @see http://php.net/curl_init
-     * @param string $url
-     * @return resource cURL handle
+     * URL for reCAPTCHA siteverify API
+     * @var string
      */
-    public function init($url = null)
+    private $siteVerifyUrl;
+
+    /**
+     * Only needed if you want to override the defaults
+     *
+     * @param string $siteVerifyUrl URL for reCAPTCHA siteverify API
+     */
+    public function __construct($siteVerifyUrl = null)
     {
-        return curl_init($url);
+        $this->siteVerifyUrl = (is_null($siteVerifyUrl)) ? ReCaptcha::SITE_VERIFY_URL : $siteVerifyUrl;
     }
 
     /**
-     * @see http://php.net/curl_setopt_array
-     * @param resource $ch
-     * @param array $options
-     * @return bool
+     * Submit the POST request with the specified parameters.
+     *
+     * @param RequestParameters $params Request parameters
+     * @return string Body of the reCAPTCHA response
      */
-    public function setoptArray($ch, array $options)
+    public function submit(RequestParameters $params)
     {
-        return curl_setopt_array($ch, $options);
-    }
+        $options = array(
+            'http' => array(
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => $params->toQueryString(),
+                // Force the peer to validate (not needed in 5.6.0+, but still works)
+                'verify_peer' => true,
+            ),
+        );
+        $context = stream_context_create($options);
+        $response = file_get_contents($this->siteVerifyUrl, false, $context);
 
-    /**
-     * @see http://php.net/curl_exec
-     * @param resource $ch
-     * @return mixed
-     */
-    public function exec($ch)
-    {
-        return curl_exec($ch);
-    }
+        if ($response !== false) {
+            return $response;
+        }
 
-    /**
-     * @see http://php.net/curl_close
-     * @param resource $ch
-     */
-    public function close($ch)
-    {
-        curl_close($ch);
+        return '{"success": false, "error-codes": ["'.ReCaptcha::E_CONNECTION_FAILED.'"]}';
     }
 }

@@ -32,30 +32,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace HackersPoulette\ReCaptcha\RequestMethod;
+namespace ReCaptcha\RequestMethod;
 
-use HackersPoulette\ReCaptcha\ReCaptcha;
-use HackersPoulette\ReCaptcha\RequestMethod;
-use HackersPoulette\ReCaptcha\RequestParameters;
+use ReCaptcha\ReCaptcha;
+use ReCaptcha\RequestMethod;
+use ReCaptcha\RequestParameters;
 
 /**
- * Sends POST requests to the reCAPTCHA service.
+ * Sends a POST request to the reCAPTCHA service, but makes use of fsockopen()
+ * instead of get_file_contents(). This is to account for people who may be on
+ * servers where allow_url_open is disabled.
  */
-class Post implements RequestMethod
+class SocketPost implements RequestMethod
 {
     /**
-     * URL for reCAPTCHA siteverify API
-     * @var string
+     * Socket to the reCAPTCHA service
+     * @var Socket
      */
+    private $socket;
+
     private $siteVerifyUrl;
 
     /**
      * Only needed if you want to override the defaults
      *
+     * @param \ReCaptcha\RequestMethod\Socket $socket optional socket, injectable for testing
      * @param string $siteVerifyUrl URL for reCAPTCHA siteverify API
      */
-    public function __construct($siteVerifyUrl = null)
+    public function __construct(Socket $socket = null, $siteVerifyUrl = null)
     {
+        $this->socket = (is_null($socket)) ? new Socket() : $socket;
         $this->siteVerifyUrl = (is_null($siteVerifyUrl)) ? ReCaptcha::SITE_VERIFY_URL : $siteVerifyUrl;
     }
 
@@ -67,22 +73,38 @@ class Post implements RequestMethod
      */
     public function submit(RequestParameters $params)
     {
-        $options = array(
-            'http' => array(
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method' => 'POST',
-                'content' => $params->toQueryString(),
-                // Force the peer to validate (not needed in 5.6.0+, but still works)
-                'verify_peer' => true,
-            ),
-        );
-        $context = stream_context_create($options);
-        $response = file_get_contents($this->siteVerifyUrl, false, $context);
+        $errno = 0;
+        $errstr = '';
+        $urlParsed = parse_url($this->siteVerifyUrl);
 
-        if ($response !== false) {
-            return $response;
+        if (false === $this->socket->fsockopen('ssl://' . $urlParsed['host'], 443, $errno, $errstr, 30)) {
+            return '{"success": false, "error-codes": ["'.ReCaptcha::E_CONNECTION_FAILED.'"]}';
         }
 
-        return '{"success": false, "error-codes": ["'.ReCaptcha::E_CONNECTION_FAILED.'"]}';
+        $content = $params->toQueryString();
+
+        $request = "POST " . $urlParsed['path'] . " HTTP/1.0\r\n";
+        $request .= "Host: " . $urlParsed['host'] . "\r\n";
+        $request .= "Content-Type: application/x-www-form-urlencoded\r\n";
+        $request .= "Content-length: " . strlen($content) . "\r\n";
+        $request .= "Connection: close\r\n\r\n";
+        $request .= $content . "\r\n\r\n";
+
+        $this->socket->fwrite($request);
+        $response = '';
+
+        while (!$this->socket->feof()) {
+            $response .= $this->socket->fgets(4096);
+        }
+
+        $this->socket->fclose();
+
+        if (0 !== strpos($response, 'HTTP/1.0 200 OK')) {
+            return '{"success": false, "error-codes": ["'.ReCaptcha::E_BAD_RESPONSE.'"]}';
+        }
+
+        $parts = preg_split("#\n\s*\n#Uis", $response);
+
+        return $parts[1];
     }
 }

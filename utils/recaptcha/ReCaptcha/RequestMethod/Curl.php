@@ -32,81 +32,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace HackersPoulette\ReCaptcha\RequestMethod;
+namespace ReCaptcha\RequestMethod;
 
 /**
- * Convenience wrapper around native socket and file functions to allow for
- * mocking.
+ * Convenience wrapper around the cURL functions to allow mocking.
  */
-class Socket
+class Curl
 {
-    private $handle = null;
-
     /**
-     * fsockopen
-     *
-     * @see http://php.net/fsockopen
-     * @param string $hostname
-     * @param int $port
-     * @param int $errno
-     * @param string $errstr
-     * @param float $timeout
-     * @return resource
+     * @see http://php.net/curl_init
+     * @param string $url
+     * @return resource cURL handle
      */
-    public function fsockopen($hostname, $port = -1, &$errno = 0, &$errstr = '', $timeout = null)
+    public function init($url = null)
     {
-        $this->handle = fsockopen($hostname, $port, $errno, $errstr, (is_null($timeout) ? ini_get("default_socket_timeout") : $timeout));
-
-        if ($this->handle != false && $errno === 0 && $errstr === '') {
-            return $this->handle;
-        }
-        return false;
+        return curl_init($url);
     }
 
     /**
-     * fwrite
-     *
-     * @see http://php.net/fwrite
-     * @param string $string
-     * @param int $length
-     * @return int | bool
-     */
-    public function fwrite($string, $length = null)
-    {
-        return fwrite($this->handle, $string, (is_null($length) ? strlen($string) : $length));
-    }
-
-    /**
-     * fgets
-     *
-     * @see http://php.net/fgets
-     * @param int $length
-     * @return string
-     */
-    public function fgets($length = null)
-    {
-        return fgets($this->handle, $length);
-    }
-
-    /**
-     * feof
-     *
-     * @see http://php.net/feof
+     * @see http://php.net/curl_setopt_array
+     * @param resource $ch
+     * @param array $options
      * @return bool
      */
-    public function feof()
+    public function setoptArray($ch, array $options)
     {
-        return feof($this->handle);
+        return curl_setopt_array($ch, $options);
     }
 
     /**
-     * fclose
-     *
-     * @see http://php.net/fclose
-     * @return bool
+     * @see http://php.net/curl_exec
+     * @param resource $ch
+     * @return mixed
      */
-    public function fclose()
+    public function exec($ch)
     {
-        return fclose($this->handle);
+        return curl_exec($ch);
+    }
+
+    /**
+     * @see http://php.net/curl_close
+     * @param resource $ch
+     */
+    public function close($ch)
+    {
+        curl_close($ch);
     }
 }

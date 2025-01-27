@@ -32,7 +32,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace HackersPoulette\ReCaptcha;
+namespace ReCaptcha;
 
 /**
  * reCAPTCHA client.

@@ -1,7 +1,6 @@
 <?php
 
-include('../ReCaptcha/ReCaptcha.php');
-include('../database-config.php');
+include('../utils/database-config.php');
 global $connexion;
 
 function mailIsValid($mail) {
@@ -38,15 +37,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Hackers Poulette SAV</h1>
     <h2>Pour toute difficultée rencontrée, merci de nous contacter via le formulaire suivant !</h2>
     <?php
-    require_once 'autoload.php';
+    require_once '../utils/recaptcha/autoload.php';
+
     if (isset ($_POST['submit'])) {
-        $recaptcha = new \HackersPoulette\ReCaptcha\ReCaptcha('6Lc0SsIqAAAAAAqL8D5hHNpj3gDA9-RFA0uFDJcU');
+        $recaptcha = new ReCaptcha\ReCaptcha('6Lc0SsIqAAAAAAqL8D5hHNpj3gDA9-RFA0uFDJcU');
 
         $gRecaptchaResponse = $_POST['g-recaptcha-response'];
 
         $remoteIp = $_SERVER['REMOTE_ADDR'];
         $resp = $recaptcha->setExpectedHostname('localhost')
-
             ->verify($gRecaptchaResponse, $remoteIp);
         if ($resp->isSuccess()) {
             echo 'Success';
@@ -83,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="import">
-            <label for="file">Importez votre fichier :</label>
+            <label for="file">Importez votre fichier (Optionnel) :</label>
             <input id="file" name="file" type="file">
         </div>
 
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'description' => $description
                 ]);
 
-                header("Location: http://localhost:8888/Hackers-Poulette/HackersPoulette/pages/success.php");
+                header("Location: http://localhost:80/hackers-poulette/pages/success.php");
                 exit();
             }
         } catch (PDOException $error) {
