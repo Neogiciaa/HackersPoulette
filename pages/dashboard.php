@@ -3,15 +3,21 @@
 include('../utils/database-config.php');
 global $connexion;
 
-
-try {
-    $query = $connexion->prepare("SELECT * FROM Ticket");
-    $query->execute();
+$searchId = '';
+if (isset($_POST['search'])) {
+    $searchId = $_POST['ticket_id'];
+    $query = $connexion->prepare("SELECT * FROM Ticket WHERE id = :id");
+    $query->execute(['id' => $searchId]);
     $result = $query->fetchAll();
-} catch (PDOException $error) {
-    echo $error->getMessage();
+} else {
+    try {
+        $query = $connexion->prepare("SELECT * FROM Ticket");
+        $query->execute();
+        $result = $query->fetchAll();
+    } catch (PDOException $error) {
+        echo $error->getMessage();
+    }
 }
-
 
 ?>
 
@@ -23,30 +29,56 @@ try {
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+ 
 </head>
 <body>
-    <h1>Dashboard Hackers Poulette &copy</h1>
-
     <section class="dashboard-container">
-        <div class="dashboard-menu">
+        <nav class="dashboard-menu">
             <ul>
-                <li><a href="dashboard.html">Acceuil</a></li>
-                <li><a href="dashboard.html">Calendrier</a></li>
-                <li><a href="dashboard.html">Réunions</a></li>
-                <li><a href="dashboard.html">Equipes</a></li>
-                <li><a href="dashboard.html">Logout</a></li>
+                <li><a href="dashboard.php">Accueil</a></li>
+                <li><a href="dashboard.php">Calendrier</a></li>
+                <li><a href="dashboard.php">Réunions</a></li>
+                <li><a href="dashboard.php">Équipes</a></li>
+                <li><a href="dashboard.php">Déconnexion</a></li>
             </ul>
-        </div>
+        </nav>
 
         <div class="dashboard-interface">
-            <article>
-                <div>
-                    <p>N° ticket :</p>
-                    <p>Description :</p>
-                    <p>Status :</p>
-                </div>
+            <h1>Dashboard Hackers Poulette &copy</h1>
 
-            </article>
+            <h2>Liste des Tickets</h2>
+            <form method="POST" action="">
+                <input type="text" name="ticket_id" placeholder="Rechercher par ID de ticket" value="<?= htmlspecialchars($searchId) ?>">
+                <input type="submit" name="search" value="Rechercher">
+            </form>
+
+            <div class="ticket-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket N°</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($result as $ticket): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($ticket['id']) ?></td>
+                                <td>
+                                    <details>
+                                        <summary><?= htmlspecialchars($ticket['description']) ?></summary>
+                                        <p>Status: <?= htmlspecialchars($ticket['status']) ?></p>
+                                    </details>
+                                </td>
+                                <td><?= htmlspecialchars($ticket['status']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 </body>
