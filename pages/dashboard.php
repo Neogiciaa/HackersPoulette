@@ -51,8 +51,10 @@ if (isset($_POST['search'])) {
 
             <h2>Liste des Tickets</h2>
             <form method="POST" action="">
-                <input type="text" name="ticket_id" placeholder="Rechercher par ID de ticket" value="<?= htmlspecialchars($searchId) ?>">
-                <input type="submit" name="search" value="Rechercher">
+                <label for="ticket_id">
+                    <input type="text" name="ticket_id" placeholder="Rechercher par ID de ticket" value="<?= htmlspecialchars($searchId ?? '') ?>">
+                </label>
+                <input type="submit" name="search" value="Rechercher" <?= empty($searchId) ? 'disabled' : '' ?>>
             </form>
 
             <div class="ticket-list">
