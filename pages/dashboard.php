@@ -41,6 +41,7 @@ if (isset($_POST['search'])) {
                 <li><a href="dashboard.php">Calendrier</a></li>
                 <li><a href="dashboard.php">Réunions</a></li>
                 <li><a href="dashboard.php">Équipes</a></li>
+                <li><a href="index.php">Nouveau Ticket</a></li>
                 <li><a href="dashboard.php">Déconnexion</a></li>
             </ul>
         </nav>
@@ -64,17 +65,17 @@ if (isset($_POST['search'])) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($result as $ticket): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($ticket['id']) ?></td>
-                                <td>
-                                    <a href="update.php">
+                    <?php foreach ($result as $ticket): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($ticket['id']) ?></td>
+                            <td>
+                                <a href="update.php?id=<?= $ticket['id'] ?>">
                                     <?= htmlspecialchars($ticket['description']) ?>
-                                    </a>
-                                </td>
-                                <td><?= htmlspecialchars($ticket['status']) ?></td>
-                            </tr>
-                        <?php endforeach; ?>
+                                </a>
+                            </td>
+                            <td><?= htmlspecialchars($ticket['status']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>

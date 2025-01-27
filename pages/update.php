@@ -19,6 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+
+    try {
+
+        $query = $connexion->prepare('SELECT * FROM Ticket WHERE id = :id');
+        $query->execute(['id' => $id]);
+        $ticket = $query->fetch();
+
+    } catch (PDOException $error) {
+        die($error->getMessage());
+    }
+}
 ?>
 
 <!doctype html>
@@ -39,17 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST" action="">
         <div>
             <label for="name">Nom :</label>
-            <input id="name" name="name" type="text" placeholder="John" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
+            <input id="name" name="name" type="text" placeholder="John" value="<?=($ticket['name']) ?>" required>
         </div>
 
         <div>
             <label for="firstname">Prénom :</label>
-            <input id="firstname" name="firstname" type="text" placeholder="Doe" value="<?= htmlspecialchars($_POST['firstname'] ?? '') ?>" required>
+            <input id="firstname" name="firstname" type="text" placeholder="Doe" value="<?=($ticket['firstname']) ?>" required>
         </div>
 
         <div>
             <label for="email">Email :</label>
-            <input id="email" name="email" type="text" placeholder="johndoe@gmail.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+            <input id="email" name="email" type="text" placeholder="johndoe@gmail.com" value="<?=($ticket['email']) ?>" required>
             <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($emailError)): ?>
                 <p style="color: red; padding-left: 6px; padding-top: 5px;"><?= htmlspecialchars($emailError) ?></p>
             <?php endif; ?>
@@ -57,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="description">
             <label for="description">Description :</label>
-            <textarea id="description" name="description" placeholder="Décrivez votre problème..." required><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
+            <input type="text" id="description" name="description" value="<?=($ticket['description']) ?>" required>
         </div>
 
         <div class="import">
@@ -66,11 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="status">
+            <?php
+                $ticketStatus = $ticket['status'];
+            ?>
             <h4>Status :</h4>
-            <label for="status"></label><select name="status" id="status">
-                <option value="Pending">Pending</option>
-                <option value="In progress">In progress</option>
-                <option value="Done">Done</option>
+            <label for="status"></label>
+            <select name="status" id="status">
+                <option value="Pending" <?= $ticketStatus === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                <option value="In progress" <?= $ticketStatus === 'In progress' ? 'selected' : '' ?>>In progress</option>
+                <option value="Done" <?= $ticketStatus === 'Done' ? 'selected' : '' ?>>Done</option>
             </select>
         </div>
 
@@ -85,17 +103,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $file = $_POST['file'];
                 $status = $_POST['status'];
 
-                $query = $connexion->prepare("INSERT INTO Ticket (name, firstname, email, file, description, status) VALUES(:name, :firstname, :email, :file, :description, :status)");
+                $query = $connexion->prepare("UPDATE Ticket SET name=:name, firstname=:firstname, email=:email, file=:file, description=:description, status=:status WHERE id=:id");
                 $query->execute([
-                    'name' => $name,
-                    'firstname' => $firstname,
-                    'email' => $email,
-                    'file' => $file,
-                    'description' => $description,
-                    'status' => $status
+                    ':name' => $name,
+                    ':firstname' => $firstname,
+                    ':email' => $email,
+                    ':file' => $file,
+                    ':description' => $description,
+                    ':status' => $status,
+                    ':id' => $id
                 ]);
 
-                header("Location: http://localhost:80/hackers-poulette/pages/dashboard.php");
+                header("Location: http://localhost:8888/Hackers-Poulette/HackersPoulette/pages/dashboard.php");
                 exit();
             }
         } catch (PDOException $error) {
