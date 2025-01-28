@@ -17,6 +17,23 @@ if (isset($_POST['search'])) {
     $result = $query->fetchAll();
 }
 
+if (isset($_POST['filter'])) {
+    $selectedStatus = $_POST['filter'];
+
+    try {
+        if ($selectedStatus === 'all') {
+            $query = $connexion->prepare("SELECT * FROM Ticket");
+            $query->execute();
+        } else {
+            $query = $connexion->prepare("SELECT * FROM Ticket WHERE status = :status");
+            $query->execute(['status' => $selectedStatus]);
+        }
+        $result = $query->fetchAll();
+
+    } catch (PDOException $error) {
+        echo $error->getMessage();
+    }
+}
 ?>
 
 <!doctype html>
@@ -29,7 +46,6 @@ if (isset($_POST['search'])) {
     <title>Dashboard</title>
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
 </head>
 <body>
 <section class="dashboard-container">
@@ -46,7 +62,6 @@ if (isset($_POST['search'])) {
 
     <div class="dashboard-interface">
         <h1>Dashboard Hackers Poulette &copy</h1>
-
         <h2>Liste des Tickets</h2>
         <form method="POST" action="">
             <label for="ticket_id">
@@ -54,6 +69,18 @@ if (isset($_POST['search'])) {
                        value="<?= htmlspecialchars($searchId ?? '') ?>">
             </label>
             <input type="submit" name="search" value="Rechercher">
+            <div class="filter-container">
+                    <label for="filter">Filtrer par status :</label>
+                    <div class="filter-dropdown">
+                        <select name="filter" id="filter">
+                            <option value="all">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In progress">In progress</option>
+                            <option value="Done">Done</option>
+                        </select>
+                        <button type="submit">Filtrer</button>
+                    </div>
+                </div>
         </form>
 
         <div class="ticket-list">
