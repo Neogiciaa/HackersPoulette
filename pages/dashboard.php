@@ -19,6 +19,25 @@ if (isset($_POST['search'])) {
     }
 }
 
+if (isset($_POST['filter'])) {
+    $selectedStatus = $_POST['filter'];
+
+    try {
+        if ($selectedStatus === 'all') {
+            $query = $connexion->prepare("SELECT * FROM Ticket");
+            $query->execute();
+        } else {
+            $query = $connexion->prepare("SELECT * FROM Ticket WHERE status = :status");
+            $query->execute(['status' => $selectedStatus]);
+        }
+        $result = $query->fetchAll();
+
+    } catch (PDOException $error) {
+        echo $error->getMessage();
+    }
+
+}
+
 ?>
 
 <!doctype html>
@@ -54,7 +73,19 @@ if (isset($_POST['search'])) {
                 <label for="ticket_id">
                     <input type="text" name="ticket_id" placeholder="Rechercher par ID de ticket" value="<?= htmlspecialchars($searchId ?? '') ?>">
                 </label>
-                <input type="submit" name="search" value="Rechercher" <?= empty($searchId) ? 'disabled' : '' ?>>
+                <input type="submit" name="search" value="Rechercher">
+                <div class="filter-container">
+                    <label for="filter">Filtrer par status :</label>
+                    <div class="filter-dropdown">
+                        <select name="filter" id="filter">
+                            <option value="all">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In progress">In progress</option>
+                            <option value="Done">Done</option>
+                        </select>
+                        <button type="submit">Filtrer</button>
+                    </div>
+                </div>
             </form>
 
             <div class="ticket-list">
