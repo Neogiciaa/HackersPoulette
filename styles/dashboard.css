@@ -125,11 +125,6 @@ form input[type="submit"] {
     &:active {
         transform: translateY(0);
     }
-
-    &:disabled {
-        cursor: not-allowed;
-        transition: none;
-    }
 }
 
 .filter-container {

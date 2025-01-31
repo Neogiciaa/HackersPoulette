@@ -3,37 +3,14 @@
 include('../utils/database-config.php');
 global $connexion;
 
-$searchId = '';
-if (isset($_POST['search'])) {
-    $searchId = $_POST['ticket_id'];
+$query = $connexion->prepare("SELECT * FROM Ticket WHERE (:id is null or id = :id) AND (:status is null or :status = 'all' or status = :status)");
+$searchById = $_POST['ticket_id'] ?? null;
+$searchByStatus = $_POST['filter'] ?? null;
+$query->bindParam(':id', $searchById);
+$query->bindParam(':status', $searchByStatus);
+$query->execute();
+$result = $query->fetchAll();
 
-    if ($searchId == '') {
-        $query = $connexion->prepare("SELECT * FROM Ticket");
-        $query->execute();
-    } else {
-        $query = $connexion->prepare("SELECT * FROM Ticket WHERE id = :id");
-        $query->execute(['id' => $searchId]);
-    }
-    $result = $query->fetchAll();
-}
-
-if (isset($_POST['filter'])) {
-    $selectedStatus = $_POST['filter'];
-
-    try {
-        if ($selectedStatus === 'all') {
-            $query = $connexion->prepare("SELECT * FROM Ticket");
-            $query->execute();
-        } else {
-            $query = $connexion->prepare("SELECT * FROM Ticket WHERE status = :status");
-            $query->execute(['status' => $selectedStatus]);
-        }
-        $result = $query->fetchAll();
-
-    } catch (PDOException $error) {
-        echo $error->getMessage();
-    }
-}
 ?>
 
 <!doctype html>

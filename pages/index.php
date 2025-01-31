@@ -54,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             var_dump($errors);
         }
     }
-
     ?>
 
     <form method="POST" action="">
@@ -108,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'description' => $description
                 ]);
 
-                header("Location: http://localhost:8888/Hackers-Poulette/HackersPoulette/pages/success.php");
+                header("Location: http://localhost:80/hackers-poulette/pages/success.php");
                 exit();
             }
         } catch (PDOException $error) {

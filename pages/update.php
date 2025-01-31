@@ -114,7 +114,7 @@ if (isset($_GET['id'])) {
                     ':id' => $id
                 ]);
 
-                header("Location: http://localhost:8888/Hackers-Poulette/HackersPoulette/pages/dashboard.php");
+                header("Location: http://localhost:80/hackers-poulette/pages/dashboard.php");
                 exit();
             }
         } catch (PDOException $error) {
