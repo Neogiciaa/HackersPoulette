@@ -3,14 +3,13 @@
 include('../utils/database-config.php');
 global $connexion;
 
-$query = $connexion->prepare("SELECT * FROM Ticket WHERE (:id is null or id = :id) AND (:status is null or :status = 'all' or status = :status)");
-$searchById = $_POST['ticket_id'] ?? null;
-$searchByStatus = $_POST['filter'] ?? null;
+$query = $connexion->prepare("SELECT * FROM Ticket WHERE (:id is null or id = :id) AND (:status = 'all' or status = :status)");
+$searchById = !empty($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
+$searchByStatus = $_POST['filter'] ?? 'all';
 $query->bindParam(':id', $searchById);
 $query->bindParam(':status', $searchByStatus);
 $query->execute();
 $result = $query->fetchAll();
-
 ?>
 
 <!doctype html>
@@ -43,17 +42,17 @@ $result = $query->fetchAll();
         <form method="POST" action="">
             <label for="ticket_id">
                 <input type="text" name="ticket_id" placeholder="Rechercher par ID de ticket"
-                       value="<?= htmlspecialchars($searchId ?? '') ?>">
+                       value="<?= htmlspecialchars(!empty($_POST['ticket_id']) ? $_POST['ticket_id'] : '') ?>">
             </label>
             <input type="submit" name="search" value="Rechercher">
             <div class="filter-container">
                     <label for="filter">Filtrer par status :</label>
                     <div class="filter-dropdown">
                         <select name="filter" id="filter">
-                            <option value="all">All</option>
-                            <option value="Pending">Pending</option>
-                            <option value="In progress">In progress</option>
-                            <option value="Done">Done</option>
+                            <option value="all" <?= $searchByStatus === 'all' ? 'selected' : '' ?>>All</option>
+                            <option value="Pending" <?= $searchByStatus === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="In progress" <?= $searchByStatus === 'In progress' ? 'selected' : '' ?>>In progress</option>
+                            <option value="Done" <?= $searchByStatus === 'Done' ? 'selected' : '' ?>>Done</option>
                         </select>
                         <button type="submit">Filtrer</button>
                     </div>
